@@ -7,7 +7,7 @@ using namespace std;
 class ImageEdge{
 	public:
 		
-	int numRows, numCols, minVal, maxVal;
+	int numRows, numCols, minVal, maxVal, min, max, maxTotal;
 	
 	//constructor
 	ImageEdge(int numRows, int numCols, int minVal, int maxVal){
@@ -15,6 +15,7 @@ class ImageEdge{
 		this->numCols = numCols;
 		this->minVal = minVal;
 		this->maxVal = maxVal;
+		maxTotal = 0;
 	}
 	
 	void loadImage(string input, int** mirrorFramedAry){
@@ -85,13 +86,38 @@ class ImageEdge{
 	}
 	
 	void write(int** Ary, ofstream& file){
-		file<<numRows<<" "<<numCols<<" "<<minVal<<" "<<maxVal<<endl;
+		//file<<numRows<<" "<<numCols<<" "<<minVal<<" "<<maxVal<<endl;
+		min = maxVal;
+		max = minVal;
+		for(int i=1;i<numRows+1;i++){
+			for(int j=1;j<numCols+1;j++){
+				if(Ary[i][j]>max)
+					max = Ary[i][j];
+				if(Ary[i][j]>maxTotal)
+					maxTotal = Ary[i][j];
+				if(Ary[i][j]<min)min = Ary[i][j];
+			}
+		}
+		file<<numRows<<" "<<numCols<<" "<<min<<" "<<max<<endl;
+		
 		for(int i=1; i<numRows+1; i++){
 			for(int j=1; j<numCols+1; j++){
 				file<<Ary[i][j]<<" ";
 			}
 			file<<endl;
 		}
+	}
+	
+	void computeHist(int** Ary, int* Hist){
+		for(int i=1; i<numRows+1;i++){
+			for(int j=1;j<numCols+1;j++){
+				Hist[Ary[i][j]]++;
+			}
+		}
+		for(int count = 0; count < maxTotal; count++){
+			cout<<count<<" "<<Hist[count]<<endl;
+		}
+		cout<<endl;
 	}
 	
 	void prettyPrint(int** Ary, ofstream& file){
@@ -162,6 +188,14 @@ int main(int argc, char* argv[]){
 		image.write(sobelLeftDiag, sobel2);
 		image.write(gradientEdge, gradient);
 		
+		int Hist[image.maxTotal];
+		for(int i=0;i<image.maxTotal;i++)
+			Hist[i] = 0;
+		/*
+		image.computeHist(sobelRightDiag, Hist);
+		image.computeHist(sobelLeftDiag, Hist);
+		image.computeHist(gradientEdge, Hist);
+		*/
 		image.prettyPrint(mirrorFramedAry, prettyPrint);
 		image.prettyPrint(sobelRightDiag, prettyPrint);
 		image.prettyPrint(sobelLeftDiag, prettyPrint);
